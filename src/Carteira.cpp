@@ -1,34 +1,36 @@
-//
-// Created by lucas on 18-04-2025.
-//
-
-#ifndef CARTEIRA_H
-#define CARTEIRA_H
+// src/Carteira.cpp
 
 #include "Carteira.h"
-#include <string>
 
-class Carteira {
-private:
-    int id;
-    std::string nomeTitular;
-    std::string corretora;
+// Construtor padrão
+Carteira::Carteira() : id(0), nomeTitular(""), corretora("") {}
 
-public:
-    Carteira(); 
-    Carteira(int id, const std::string& nomeTitular, const std::string& corretora);
+// Construtor com parâmetros
+Carteira::Carteira(int id, const std::string& nomeTitular, const std::string& corretora)
+    : id(id), nomeTitular(nomeTitular), corretora(corretora) {}
 
-    int getId() const;
-    void setId(int id);
+// Getters
+int Carteira::getId() const {
+    return id;
+}
 
-    std::string getNomeTitular() const;
-    void setNomeTitular(const std::string& nomeTitular);
+std::string Carteira::getNomeTitular() const {
+    return nomeTitular;
+}
 
-    std::string getCorretora() const;
-    void setCorretora(const std::string& corretora);
+std::string Carteira::getCorretora() const {
+    return corretora;
+}
 
-    std::string toString() const;
+// Setters
+void Carteira::setId(int id) {
+    this->id = id;
+}
 
-};
+void Carteira::setNomeTitular(const std::string& nomeTitular) {
+    this->nomeTitular = nomeTitular;
+}
 
-#endif
+void Carteira::setCorretora(const std::string& corretora) {
+    this->corretora = corretora;
+}
