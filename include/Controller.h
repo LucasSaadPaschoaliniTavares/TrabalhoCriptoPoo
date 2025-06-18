@@ -1,6 +1,8 @@
-
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
+
+#include <vector>
+#include <string>
 
 #include "DataBaseSelector.h"
 #include "ICarteiraDAO.h"
@@ -24,6 +26,18 @@ private:
     void _processarMenuCarteira();
     void _processarMenuMovimentacao();
     void _processarMenuRelatorio();
+    void _processarMenuAjuda();
+    void _mostrarTextoDeAjuda();
+    void _mostrarCreditos();
+    void listarPorId();
+    void listarPorNome();
+    void exibirSaldo();
+    void exibirHistorico();
+    void exibirGanhoPerdaTotal();
+
+
+    void launchActions(std::string title, std::vector<std::string> menuItens, std::vector<void (Controller::*)()> functions);
+
 
 public:
     Controller(DataBaseSelector selector);
@@ -31,4 +45,4 @@ public:
     void executar();
 };
 
-#endif
+#endif // CONTROLLER_H

@@ -1,4 +1,3 @@
-
 #ifndef ORACULODAO_DB_H
 #define ORACULODAO_DB_H
 

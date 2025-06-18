@@ -1,4 +1,3 @@
-
 #include "CarteiraDAO_DB.h"
 #include <iostream>
 #include <memory>

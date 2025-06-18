@@ -1,5 +1,3 @@
-
-
 #ifndef CARTEIRA_DAO_MEMORY_H
 #define CARTEIRA_DAO_MEMORY_H
 

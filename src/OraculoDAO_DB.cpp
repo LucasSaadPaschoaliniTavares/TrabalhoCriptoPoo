@@ -1,4 +1,3 @@
-
 #include "OraculoDAO_DB.h"
 #include <iostream>
 #include <memory>

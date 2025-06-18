@@ -1,5 +1,3 @@
-
-
 #include <iostream>
 #include <exception>
 #include <memory>
@@ -33,11 +31,10 @@ DataBaseSelector escolherModoDePersistencia() {
 
         std::cin >> escolha;
 
-        // Verifica se a entrada foi um número válido
         if (std::cin.fail()) {
             std::cout << "\nEntrada inválida. Por favor, digite 1 ou 2.\n\n";
-            std::cin.clear(); // Limpa o estado de erro do cin
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Descarta a entrada ruim
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             continue;
         }
 

@@ -1,5 +1,3 @@
-// Arquivo: include/OraculoDAO_Memory.h
-
 #ifndef ORACULO_DAO_MEMORY_H
 #define ORACULO_DAO_MEMORY_H
 

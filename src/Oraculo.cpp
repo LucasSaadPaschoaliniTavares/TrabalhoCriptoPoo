@@ -1,5 +1,3 @@
-
-
 #include "Oraculo.h"
 
 
@@ -16,13 +14,11 @@ double Oraculo::getCotacao() const {
     return cotacao;
 }
 
-// Implementação dos Setters
 void Oraculo::setData(const std::string& data) {
     this->data = data;
 }
 
 void Oraculo::setCotacao(double novaCotacao) {
-    // Validação para garantir que a cotação não seja negativa, como na tabela
     if (novaCotacao < 0) {
         throw std::invalid_argument("A cotação não pode ser um valor negativo.");
     }

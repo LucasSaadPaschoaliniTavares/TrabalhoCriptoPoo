@@ -1,4 +1,3 @@
-
 #ifndef ORACULO_H
 #define ORACULO_H
 

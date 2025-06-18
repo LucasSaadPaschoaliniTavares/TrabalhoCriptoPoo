@@ -1,4 +1,3 @@
-
 #include "CarteiraDAO_Memory.h"
 
 CarteiraDAO_Memory::CarteiraDAO_Memory() : proximoId(1) {}

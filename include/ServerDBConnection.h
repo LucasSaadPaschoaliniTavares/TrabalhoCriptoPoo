@@ -1,5 +1,3 @@
-
-
 #ifndef SERVERDBCONNECTION_H_
 #define SERVERDBCONNECTION_H_
 

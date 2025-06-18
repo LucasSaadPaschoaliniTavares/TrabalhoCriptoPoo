@@ -1,4 +1,3 @@
-
 #include "ServerDBConnection.h"
 #include <iostream>
 #include <stdexcept>

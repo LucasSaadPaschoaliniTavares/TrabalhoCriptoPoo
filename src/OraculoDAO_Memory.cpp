@@ -1,5 +1,3 @@
-
-
 #include "OraculoDAO_Memory.h"
 
 void OraculoDAO_Memory::incluir(const Oraculo& oraculo) {
