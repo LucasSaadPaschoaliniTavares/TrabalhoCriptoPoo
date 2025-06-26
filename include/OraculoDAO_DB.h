@@ -14,7 +14,7 @@ public:
 
     void incluir(const Oraculo& oraculo) override;
     Oraculo* recuperar(const std::string& data) override;
-    std::vector<Oraculo> listar() override;
+    std::vector<Oraculo> listar() const override;
 };
 
 #endif

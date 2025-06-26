@@ -10,7 +10,7 @@ CarteiraDAO_DB::~CarteiraDAO_DB() {}
 void CarteiraDAO_DB::incluir(const Carteira& carteira) {
     try {
         sql::Connection* conn = dbConnection->getConnection();
-        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("INSERT INTO Carteiras(nome_titular, corretora) VALUES (?, ?)"));
+        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("INSERT INTO CARTEIRA(Titular, Corretora) VALUES (?, ?)"));
 
         pstmt->setString(1, carteira.getNomeTitular());
         pstmt->setString(2, carteira.getCorretora());
@@ -25,16 +25,16 @@ void CarteiraDAO_DB::incluir(const Carteira& carteira) {
 Carteira* CarteiraDAO_DB::recuperar(int id) {
     try {
         sql::Connection* conn = dbConnection->getConnection();
-        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("SELECT id, nome_titular, corretora FROM Carteiras WHERE id = ?"));
+        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("SELECT IdCarteira, Titular, Corretora FROM CARTEIRA WHERE IdCarteira = ?"));
 
         pstmt->setInt(1, id);
 
         std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
         if (res->next()) {
             return new Carteira(
-                res->getInt("id"),
-                res->getString("nome_titular"),
-                res->getString("corretora")
+                res->getInt("IdCarteira"),
+                (std::string)res->getString("Titular"),
+                (std::string)res->getString("Corretora")
             );
         }
     } catch (sql::SQLException &e) {
@@ -43,18 +43,18 @@ Carteira* CarteiraDAO_DB::recuperar(int id) {
     return nullptr;
 }
 
-std::vector<Carteira> CarteiraDAO_DB::listar() {
+std::vector<Carteira> CarteiraDAO_DB::listar() const {
     std::vector<Carteira> carteiras;
     try {
         sql::Connection* conn = dbConnection->getConnection();
         std::unique_ptr<sql::Statement> stmt(conn->createStatement());
-        std::unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT id, nome_titular, corretora FROM Carteiras ORDER BY nome_titular"));
+        std::unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT IdCarteira, Titular, Corretora FROM CARTEIRA ORDER BY Titular"));
 
         while (res->next()) {
             carteiras.push_back(Carteira(
-                res->getInt("id"),
-                res->getString("nome_titular"),
-                res->getString("corretora")
+                res->getInt("IdCarteira"),
+                (std::string)res->getString("Titular"),
+                (std::string)res->getString("Corretora")
             ));
         }
     } catch (sql::SQLException &e) {
@@ -66,7 +66,7 @@ std::vector<Carteira> CarteiraDAO_DB::listar() {
 bool CarteiraDAO_DB::editar(const Carteira& carteira) {
     try {
         sql::Connection* conn = dbConnection->getConnection();
-        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("UPDATE Carteiras SET nome_titular = ?, corretora = ? WHERE id = ?"));
+        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("UPDATE CARTEIRA SET Titular = ?, Corretora = ? WHERE IdCarteira = ?"));
 
         pstmt->setString(1, carteira.getNomeTitular());
         pstmt->setString(2, carteira.getCorretora());
@@ -83,7 +83,7 @@ bool CarteiraDAO_DB::editar(const Carteira& carteira) {
 bool CarteiraDAO_DB::excluir(int id) {
     try {
         sql::Connection* conn = dbConnection->getConnection();
-        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("DELETE FROM Carteiras WHERE id = ?"));
+        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("DELETE FROM CARTEIRA WHERE IdCarteira = ?"));
 
         pstmt->setInt(1, id);
 

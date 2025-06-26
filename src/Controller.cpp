@@ -9,7 +9,10 @@
 #include "SysInfo.h"
 #include "TextFromFile.h"
 #include "Utils.h"
-
+#include "CarteiraDAO_DB.h"
+#include "MovimentacaoDAO_DB.h"
+#include "OraculoDAO_DB.h"
+#include "ServerDBConnection.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -19,6 +22,7 @@
 #include <sstream>
 #include <ctime>
 #include <algorithm>
+#include <memory>
 
 using namespace std;
 
@@ -29,7 +33,8 @@ double gerarCotacaoAleatoria(double min, double max) {
     return distrib(gen);
 }
 
-Controller::Controller(DataBaseSelector selector) {
+
+Controller::Controller(DataBaseSelector selector) : dbConnection(nullptr) {
     switch (selector) {
     case DataBaseSelector::MEMORY:
         this->carteiraDao = new CarteiraDAO_Memory();
@@ -37,11 +42,17 @@ Controller::Controller(DataBaseSelector selector) {
         this->oraculoDao = new OraculoDAO_Memory();
         _popularOraculo();
         break;
-    default:
-            if (selector != DataBaseSelector::MEMORY) {
-                throw std::invalid_argument("Modelo de persistência selecionado não está disponível.");
-            }
+    case DataBaseSelector::MARIADB:
+      {
+            this->dbConnection = new ServerDBConnection();
+            this->carteiraDao = new CarteiraDAO_DB(this->dbConnection);
+            this->movDao = new MovimentacaoDAO_DB(this->dbConnection);
+            this->oraculoDao = new OraculoDAO_DB(this->dbConnection);
+            std::cout << "DAOs configurados para MariaDB com sucesso.\n";
+      }
         break;
+    default:
+        throw std::invalid_argument("Modelo de persistência selecionado não está disponível.");
     }
 }
 
@@ -49,6 +60,10 @@ Controller::~Controller() {
     delete carteiraDao;
     delete movDao;
     delete oraculoDao;
+
+    if (dbConnection != nullptr) {
+        delete dbConnection;
+    }
 }
 
 void Controller::_popularOraculo() {
@@ -75,47 +90,29 @@ void Controller::executar() {
         &Controller::_processarMenuAjuda
     };
     launchActions("Menu Principal", principalOpcoes, principalFunctions);
+    Utils::limparTela();
     cout << "Saindo do sistema...\n";
 }
 
+
 void Controller::_processarMenuCarteira() {
     vector<string> carteiraOpcoes = {"Incluir carteira", "Listar carteiras", "Editar carteira", "Excluir carteira", "Voltar"};
-    vector<void (Controller::*)()> carteiraFunctions = {
-        &Controller::_incluirCarteira,
-        &Controller::_listarCarteiras,
-        &Controller::_editarCarteira,
-        &Controller::_excluirCarteira
-    };
+    vector<void (Controller::*)()> carteiraFunctions = { &Controller::_incluirCarteira, &Controller::_listarCarteiras, &Controller::_editarCarteira, &Controller::_excluirCarteira };
     launchActions("Menu Carteira", carteiraOpcoes, carteiraFunctions);
 }
-
 void Controller::_processarMenuMovimentacao() {
     vector<string> movimentacaoOpcoes = {"Registrar compra", "Registrar venda", "Voltar"};
-    vector<void (Controller::*)()> movimentacaoFunctions = {
-        &Controller::_registrarCompra,
-        &Controller::_registrarVenda
-    };
+    vector<void (Controller::*)()> movimentacaoFunctions = { &Controller::_registrarCompra, &Controller::_registrarVenda };
     launchActions("Menu Movimentacao", movimentacaoOpcoes, movimentacaoFunctions);
 }
-
 void Controller::_processarMenuRelatorio() {
     vector<string> relatorioOpcoes = {"Listar por ID", "Listar por Nome", "Saldo da carteira", "Histórico", "Ganho/Perda Total", "Voltar"};
-    vector<void (Controller::*)()> relatorioFunctions = {
-        &Controller::listarPorId, // << Chamando diretamente os métodos do Controller
-        &Controller::listarPorNome,
-        &Controller::exibirSaldo,
-        &Controller::exibirHistorico,
-        &Controller::exibirGanhoPerdaTotal
-    };
+    vector<void (Controller::*)()> relatorioFunctions = { &Controller::listarPorId, &Controller::listarPorNome, &Controller::exibirSaldo, &Controller::exibirHistorico, &Controller::exibirGanhoPerdaTotal };
     launchActions("Menu Relatórios", relatorioOpcoes, relatorioFunctions);
 }
-
 void Controller::_processarMenuAjuda() {
     std::vector<std::string> ajudaOpcoes = {"Exibir texto de ajuda", "Créditos", "Voltar"};
-    std::vector<void (Controller::*)()> ajudaFunctions = {
-        &Controller::_mostrarTextoDeAjuda,
-        &Controller::_mostrarCreditos
-    };
+    std::vector<void (Controller::*)()> ajudaFunctions = { &Controller::_mostrarTextoDeAjuda, &Controller::_mostrarCreditos };
     launchActions("Menu de Ajuda", ajudaOpcoes, ajudaFunctions);
 }
 
@@ -125,7 +122,8 @@ void Controller::_incluirCarteira() {
     string nome;
     getline(cin, nome);
     carteiraDao->incluir(Carteira(0, nome, "Default Broker"));
-    cout << "Carteira incluída com sucesso!\n\n";
+    cout << "Carteira incluída com sucesso!\n";
+    Utils::pausar();
 }
 
 void Controller::_listarCarteiras() {
@@ -137,7 +135,7 @@ void Controller::_listarCarteiras() {
             cout << "ID: " << c.getId() << " | Titular: " << c.getNomeTitular() << '\n';
         }
     }
-    cout << endl;
+    Utils::pausar();
 }
 
 void Controller::_editarCarteira() {
@@ -145,83 +143,98 @@ void Controller::_editarCarteira() {
     cout << "Digite o ID da carteira: ";
     int id; cin >> id; cin.ignore();
     Carteira* c = carteiraDao->recuperar(id);
-    if (c == nullptr) { cout << "Carteira não encontrada.\n\n"; return; }
-    cout << "Nome atual: " << c->getNomeTitular() << "\n";
-    cout << "Novo nome: ";
-    string novoNome; getline(cin, novoNome);
-    c->setNomeTitular(novoNome);
-    carteiraDao->editar(*c);
-    cout << "Carteira editada com sucesso!\n\n";
+    if (c == nullptr) { cout << "Carteira não encontrada.\n"; }
+    else {
+        cout << "Nome atual: " << c->getNomeTitular() << "\n";
+        cout << "Novo nome: ";
+        string novoNome; getline(cin, novoNome);
+        c->setNomeTitular(novoNome);
+        carteiraDao->editar(*c);
+        cout << "Carteira editada com sucesso!\n";
+    }
+    Utils::pausar();
 }
 
 void Controller::_excluirCarteira() {
     cout << "=== Excluir carteira ===\n";
     cout << "Digite o ID da carteira: ";
     int id; cin >> id; cin.ignore();
-    if (carteiraDao->excluir(id)) { cout << "Carteira excluída com sucesso!\n\n"; }
-    else { cout << "Carteira não encontrada.\n\n"; }
+    if (carteiraDao->excluir(id)) { cout << "Carteira excluída com sucesso!\n"; }
+    else { cout << "Carteira não encontrada.\n"; }
+    Utils::pausar();
 }
 
 void Controller::_registrarCompra() {
     cout << "Registrar compra de moeda virtual\n";
     cout << "ID da carteira: ";
     int carteiraId; cin >> carteiraId; cin.ignore();
-    if (carteiraDao->recuperar(carteiraId) == nullptr) { cout << "Carteira nao encontrada!\n\n"; return; }
-    cout << "Quantidade: ";
-    double qtd; cin >> qtd; cin.ignore();
-    string data; cout << "Data (AAAA-MM-DD): "; getline(cin, data);
-    movDao->incluir(Movimentacao(0, carteiraId, Movimentacao::COMPRA, qtd, data));
-    cout << "Compra registrada com sucesso!\n\n";
+    if (carteiraDao->recuperar(carteiraId) == nullptr) { cout << "Carteira nao encontrada!\n"; }
+    else {
+        cout << "Quantidade: ";
+        double qtd; cin >> qtd; cin.ignore();
+        string data; cout << "Data (AAAA-MM-DD): "; getline(cin, data);
+        movDao->incluir(Movimentacao(0, carteiraId, Movimentacao::COMPRA, qtd, data));
+        cout << "Compra registrada com sucesso!\n";
+    }
+    Utils::pausar();
 }
 
 void Controller::_registrarVenda() {
     cout << "Registrar venda de moeda virtual\n";
     cout << "ID da carteira: ";
     int carteiraId; cin >> carteiraId; cin.ignore();
-    if (carteiraDao->recuperar(carteiraId) == nullptr) { cout << "Carteira nao encontrada!\n\n"; return; }
-    cout << "Quantidade: ";
-    double qtd; cin >> qtd; cin.ignore();
-    string data; cout << "Data (AAAA-MM-DD): "; getline(cin, data);
-    movDao->incluir(Movimentacao(0, carteiraId, Movimentacao::VENDA, qtd, data));
-    cout << "Venda registrada com sucesso!\n\n";
+    if (carteiraDao->recuperar(carteiraId) == nullptr) { cout << "Carteira nao encontrada!\n"; }
+    else {
+        cout << "Quantidade: ";
+        double qtd; cin >> qtd; cin.ignore();
+        string data; cout << "Data (AAAA-MM-DD): "; getline(cin, data);
+        movDao->incluir(Movimentacao(0, carteiraId, Movimentacao::VENDA, qtd, data));
+        cout << "Venda registrada com sucesso!\n";
+    }
+    Utils::pausar();
 }
 
 void Controller::_mostrarTextoDeAjuda(){
-        Utils::printMessage(SysInfo::getFullVersion() + " | Help");
-        unique_ptr<TextFromFile> textFromFile(new TextFromFile(SysInfo::getHelpFile()));
-        Utils::printFramedMessage(textFromFile->getFileContent(), "*", 120);
+    Utils::printMessage(SysInfo::getFullVersion() + " | Help");
+    unique_ptr<TextFromFile> textFromFile(new TextFromFile(SysInfo::getHelpFile()));
+    Utils::printFramedMessage(textFromFile->getFileContent(), "*", 120);
+    Utils::pausar();
 }
 
 void Controller::_mostrarCreditos() {
+    Utils::printMessage("Sobre o " + SysInfo::getSystemName());
     string text = "";
     text += SysInfo::getFullVersion() + "\n";
     text += "Autores: " + SysInfo::getAuthor() + "\n";
     text += "Instituicao: " + SysInfo::getInstitution() + "\n";
     text += "Copyright (C) " + SysInfo::getDate() + " " + SysInfo::getAuthor() + "\n";
-
-    Utils::printMessage("Sobre o " + SysInfo::getSystemName());
-
     Utils::printFramedMessage(text, "*", 80);
-
-    cout << "\nPressione Enter para voltar...";
-    cin.get();
+    Utils::pausar();
 }
 
+// --- launchActions MODIFICADO ---
+// A lógica de limpeza e exibição do menu foi centralizada aqui para o fluxo correto.
 void Controller::launchActions(string title, vector<string> menuItens, vector<void (Controller::*)()> functions)
 {
     try
     {
-        Menu menu(menuItens, title, "Your option: ");
+        Menu menu(menuItens, title, "Sua opção: ");
         menu.setSymbol("*");
 
-        while (int choice = menu.getChoice())
-        {
-            if (choice > 0 && (choice - 1) < functions.size()) {
+        int choice;
+        do {
+            Utils::limparTela();
+            choice = menu.getChoice();
+
+            if (choice > 0 && (size_t)(choice - 1) < functions.size()) {
+                Utils::limparTela();
                 (this->*functions.at(choice - 1))();
-            } else {
+            } else if (choice != 0) {
+                Utils::limparTela();
                 cout << "Opcao invalida! Por favor, tente novamente.\n";
+                Utils::pausar();
             }
-        }
+        } while (choice != 0);
     }
     catch (const exception &myException)
     {
@@ -233,124 +246,90 @@ void Controller::launchActions(string title, vector<string> menuItens, vector<vo
 void Controller::listarPorId() {
     cout << "=== Carteiras ordenadas por ID ===\n";
     vector<Carteira> lista = carteiraDao->listar();
-    sort(lista.begin(), lista.end(),
-        [](const Carteira& a, const Carteira& b) {
-            return a.getId() < b.getId();
-        });
-
+    sort(lista.begin(), lista.end(), [](const Carteira& a, const Carteira& b) { return a.getId() < b.getId(); });
     for (const auto& c : lista) {
-        cout << "ID: " << c.getId()
-             << " | Titular: " << c.getNomeTitular() << '\n';
+        cout << "ID: " << c.getId() << " | Titular: " << c.getNomeTitular() << '\n';
     }
-    cout << endl;
+    Utils::pausar();
 }
 
 void Controller::listarPorNome() {
     cout << "=== Carteiras ordenadas por nome ===\n";
     vector<Carteira> lista = carteiraDao->listar();
-
-    sort(lista.begin(), lista.end(),
-        [](const Carteira& a, const Carteira& b) {
-            return a.getNomeTitular() < b.getNomeTitular();
-        });
-
+    sort(lista.begin(), lista.end(), [](const Carteira& a, const Carteira& b) { return a.getNomeTitular() < b.getNomeTitular(); });
     for (const auto& c : lista) {
-        cout << "ID: " << c.getId()
-             << " | Titular: " << c.getNomeTitular() << '\n';
+        cout << "ID: " << c.getId() << " | Titular: " << c.getNomeTitular() << '\n';
     }
-    cout << endl;
+    Utils::pausar();
 }
 
 void Controller::exibirSaldo() {
     cout << "=== Exibir saldo da carteira ===\n";
     cout << "Digite o ID da carteira: ";
-    int id;
-    cin >> id;
-    cin.ignore();
-
+    int id; cin >> id; cin.ignore();
     Carteira* c = carteiraDao->recuperar(id);
-    if (!c) {
-        cout << "Carteira nao encontrada.\n\n";
-        return;
+    if (!c) { cout << "Carteira nao encontrada.\n"; }
+    else {
+        vector<Movimentacao> movimentacoes = movDao->listarPorCarteira(id);
+        double saldo = 0.0;
+        for (const auto& m : movimentacoes) {
+            saldo += (m.getTipo() == Movimentacao::COMPRA ? m.getQuantidade() : -m.getQuantidade());
+        }
+        cout << "Saldo atual (em quantidade de moeda) da carteira \"" << c->getNomeTitular() << "\": " << saldo << "\n";
     }
-
-    vector<Movimentacao> movimentacoes = movDao->listarPorCarteira(id);
-    double saldo = 0.0;
-
-    for (const auto& m : movimentacoes) {
-        saldo += (m.getTipo() == Movimentacao::COMPRA ? m.getQuantidade() : -m.getQuantidade());
-    }
-
-    cout << "Saldo atual (em quantidade de moeda) da carteira \"" << c->getNomeTitular() << "\": " << saldo << "\n\n";
+    Utils::pausar();
 }
 
 void Controller::exibirHistorico() {
     cout << "=== Histórico da carteira ===\n";
     cout << "Digite o ID da carteira: ";
-    int id;
-    cin >> id;
-    cin.ignore();
-
+    int id; cin >> id; cin.ignore();
     Carteira* c = carteiraDao->recuperar(id);
-    if (!c) {
-        cout << "Carteira nao encontrada.\n\n";
-        return;
-    }
-
-    cout << "Movimentações da carteira \"" << c->getNomeTitular() << "\":\n";
-    vector<Movimentacao> movimentacoes = movDao->listarPorCarteira(id);
-
-    if (movimentacoes.empty()) {
-        cout << "Nenhuma movimentação encontrada para esta carteira.\n";
-    } else {
-        for (const auto& m : movimentacoes) {
-            cout << (m.getTipo() == Movimentacao::COMPRA ? "Compra" : "Venda")
-                 << " - Qtde: " << m.getQuantidade()
-                 << ", Data: " << m.getData() << '\n';
+    if (!c) { cout << "Carteira nao encontrada.\n"; }
+    else {
+        cout << "Movimentações da carteira \"" << c->getNomeTitular() << "\":\n";
+        vector<Movimentacao> movimentacoes = movDao->listarPorCarteira(id);
+        if (movimentacoes.empty()) { cout << "Nenhuma movimentação encontrada para esta carteira.\n"; }
+        else {
+            for (const auto& m : movimentacoes) {
+                cout << (m.getTipo() == Movimentacao::COMPRA ? "Compra" : "Venda")
+                     << " - Qtde: " << m.getQuantidade()
+                     << ", Data: " << m.getData() << '\n';
+            }
         }
     }
-    cout << endl;
+    Utils::pausar();
 }
 
 void Controller::exibirGanhoPerdaTotal() {
     cout << "=== Ganho ou perda total das carteiras (baseado no Oráculo) ===\n";
     vector<Carteira> carteiras = carteiraDao->listar();
-
-    if (carteiras.empty()) {
-        cout << "Nenhuma carteira cadastrada para gerar relatório.\n\n";
-        return;
-    }
-
-    for (const auto& c : carteiras) {
-        vector<Movimentacao> movimentacoes = movDao->listarPorCarteira(c.getId());
-
-        double totalGastoEmCompras = 0.0;
-        double totalRecebidoDeVendas = 0.0;
-
-        for (const auto& m : movimentacoes) {
-            Oraculo* oraculoDoDia = oraculoDao->recuperar(m.getData());
-
-            if (!oraculoDoDia) {
-                cout << "[AVISO] Carteira '" << c.getNomeTitular()
-                     << "': Sem cotação no Oráculo para a data " << m.getData()
-                     << ". Movimentação ignorada no cálculo.\n";
-                continue;
+    if (carteiras.empty()) { cout << "Nenhuma carteira cadastrada para gerar relatório.\n"; }
+    else {
+        for (const auto& c : carteiras) {
+            vector<Movimentacao> movimentacoes = movDao->listarPorCarteira(c.getId());
+            double totalGastoEmCompras = 0.0;
+            double totalRecebidoDeVendas = 0.0;
+            for (const auto& m : movimentacoes) {
+                Oraculo* oraculoDoDia = oraculoDao->recuperar(m.getData());
+                if (!oraculoDoDia) {
+                    cout << "[AVISO] Carteira '" << c.getNomeTitular()
+                         << "': Sem cotação no Oráculo para a data " << m.getData()
+                         << ". Movimentação ignorada no cálculo.\n";
+                    continue;
+                }
+                double cotacaoDoDia = oraculoDoDia->getCotacao();
+                double valorDaTransacao = m.getQuantidade() * cotacaoDoDia;
+                if (m.getTipo() == Movimentacao::COMPRA) {
+                    totalGastoEmCompras += valorDaTransacao;
+                } else {
+                    totalRecebidoDeVendas += valorDaTransacao;
+                }
             }
-
-            double cotacaoDoDia = oraculoDoDia->getCotacao();
-            double valorDaTransacao = m.getQuantidade() * cotacaoDoDia;
-
-            if (m.getTipo() == Movimentacao::COMPRA) {
-                totalGastoEmCompras += valorDaTransacao;
-            } else {
-                totalRecebidoDeVendas += valorDaTransacao;
-            }
+            double ganhoPerda = totalRecebidoDeVendas - totalGastoEmCompras;
+            cout << "Carteira: " << c.getNomeTitular()
+                 << " | Ganho/Perda Realizado: " << ganhoPerda << '\n';
         }
-
-        double ganhoPerda = totalRecebidoDeVendas - totalGastoEmCompras;
-
-        cout << "Carteira: " << c.getNomeTitular()
-             << " | Ganho/Perda Realizado: " << ganhoPerda << '\n';
     }
-    cout << endl;
+    Utils::pausar();
 }

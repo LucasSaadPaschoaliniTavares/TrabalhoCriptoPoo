@@ -15,7 +15,7 @@ public:
 
     void incluir(const Carteira& carteira) override;
     Carteira* recuperar(int id) override;
-    std::vector<Carteira> listar() override;
+    std::vector<Carteira> listar() const override;
     bool editar(const Carteira& carteira) override;
     bool excluir(int id) override;
 };

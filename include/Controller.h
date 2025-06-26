@@ -8,6 +8,7 @@
 #include "ICarteiraDAO.h"
 #include "IMovimentacaoDAO.h"
 #include "IOraculoDAO.h"
+#include "ServerDBConnection.h"
 
 
 class Controller {
@@ -15,6 +16,8 @@ private:
     ICarteiraDAO* carteiraDao;
     IMovimentacaoDAO* movDao;
     IOraculoDAO* oraculoDao;
+    ServerDBConnection* dbConnection;
+
 
     void _popularOraculo();
     void _incluirCarteira();

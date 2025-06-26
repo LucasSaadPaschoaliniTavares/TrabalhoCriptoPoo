@@ -1,14 +1,21 @@
 #include "ServerDBConnection.h"
 #include <iostream>
+#include <cstdlib>
 #include <stdexcept>
 
 ServerDBConnection::ServerDBConnection() : driver(nullptr), connection(nullptr) {
     try {
         this->driver = sql::mariadb::get_driver_instance();
 
-        std::string url = "jdbc:mariadb://" + serverIP + ":" + serverPort + "/" + serverDatabase;
+        std::string urlStr = "jdbc:mariadb://" + serverIP + ":" + serverPort + "/" + serverDatabase;
+        sql::SQLString url(urlStr);
 
-        this->connection = driver->connect(url, serverUser, serverPassword);
+        sql::Properties properties({
+            {"user", serverUser},
+            {"password", serverPassword}
+        });
+
+        this->connection = driver->connect(url, properties);
 
         std::cout << "[INFO] Conectado com sucesso ao banco de dados '" << serverDatabase << "'." << std::endl;
 
@@ -20,9 +27,7 @@ ServerDBConnection::ServerDBConnection() : driver(nullptr), connection(nullptr) 
 }
 
 ServerDBConnection::~ServerDBConnection() {
-    if (this->connection) {
-        this->connection->close();
-    }
+    this->connection->close();
 }
 
 sql::Connection* ServerDBConnection::getConnection() const {

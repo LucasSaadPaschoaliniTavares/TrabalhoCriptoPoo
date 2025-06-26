@@ -1,6 +1,80 @@
-loasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlas
-loasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlas
-loasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlas
-loasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlas
-loasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlas
-loasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlasloasdasdasdlasdllasldlas
+======================================================================
+           AJUDA DO SISTEMA DE CARTEIRA DE CRIPTO (FT_coin)
+======================================================================
+
+Bem-vindo! Este programa permite gerenciar portfólios de uma moeda
+virtual. Você pode criar carteiras, registrar compras e vendas, e
+analisar seus resultados através de relatórios.
+
+A navegação é feita através de menus numéricos. Digite o número da
+opção desejada e pressione Enter. Geralmente, a opção '0' serve para
+voltar ao menu anterior ou para sair do programa.
+
+
+-------------------------
+DESCRIÇÃO DOS MENUS
+-------------------------
+
+[1] Menu Carteira
+-----------------
+Gerencia suas carteiras (ou portfólios). Uma carteira pertence a um
+titular e armazena suas transações.
+
+  - Incluir carteira: Cria uma nova carteira no sistema. Você
+    precisará fornecer o nome do titular. O ID da carteira é
+    gerado automaticamente.
+  - Listar carteiras: Exibe todas as carteiras cadastradas com
+    seus respectivos IDs e titulares.
+  - Editar carteira: Permite alterar o nome do titular de uma
+    carteira existente, usando o ID dela.
+  - Excluir carteira: Remove uma carteira e todo o seu histórico
+    de transações do sistema.
+
+
+[2] Menu Movimentacao
+---------------------
+Registra as transações de compra e venda da moeda virtual.
+
+  - Registrar compra: Adiciona uma operação de compra a uma
+    carteira. Você precisará informar o ID da carteira, a
+    quantidade de moeda comprada e a data da transação.
+  - Registrar venda: Adiciona uma operação de venda a uma
+    carteira.
+
+
+[3] Menu Relatórios
+-------------------
+Exibe informações consolidadas sobre suas carteiras e transações.
+
+  - Listar por ID / Nome: Mostra suas carteiras ordenadas por ID
+    ou pelo nome do titular.
+  - Saldo da carteira: Calcula a quantidade total de moeda que
+    uma carteira possui (soma de todas as compras menos a soma
+    de todas as vendas).
+  - Histórico: Exibe todas as movimentações (compras e vendas)
+    de uma carteira específica.
+  - Ganho/Perda Total: Calcula o resultado financeiro de uma
+    carteira. Ele usa as cotações do "Oráculo" para determinar
+    o valor das transações em cada data e apresenta o lucro ou
+    prejuízo realizado.
+
+
+-------------------------
+CONCEITOS IMPORTANTES
+-------------------------
+
+O "Oráculo":
+O Oráculo é o componente do sistema que sabe o preço da moeda
+virtual para cada dia. Ele é essencial para o relatório de
+"Ganho/Perda". Ao usar o modo "Em Memória", os dados do Oráculo
+são gerados aleatoriamente. No modo "Banco de Dados", eles são
+lidos da tabela ORACULO.
+
+Formato da Data:
+Todas as datas no sistema devem ser inseridas OBRIGATORIAMENTE no
+formato AAAA-MM-DD (Ano com 4 dígitos, Mês com 2, Dia com 2).
+Exemplo: 2025-06-26.
+Usar o formato incorreto impedirá que o sistema encontre a
+cotação correta no Oráculo.
+
+======================================================================

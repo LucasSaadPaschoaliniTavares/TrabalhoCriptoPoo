@@ -8,7 +8,7 @@ OraculoDAO_DB::~OraculoDAO_DB() {}
 void OraculoDAO_DB::incluir(const Oraculo& oraculo) {
     try {
         sql::Connection* conn = dbConnection->getConnection();
-        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("INSERT INTO Oraculo(data, cotacao) VALUES (?, ?) ON DUPLICATE KEY UPDATE cotacao = VALUES(cotacao)"));
+        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("INSERT INTO ORACULO(Data, Cotacao) VALUES (?, ?) ON DUPLICATE KEY UPDATE Cotacao = VALUES(Cotacao)"));
 
         pstmt->setString(1, oraculo.getData());
         pstmt->setDouble(2, oraculo.getCotacao());
@@ -23,7 +23,7 @@ void OraculoDAO_DB::incluir(const Oraculo& oraculo) {
 Oraculo* OraculoDAO_DB::recuperar(const std::string& data) {
     try {
         sql::Connection* conn = dbConnection->getConnection();
-        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("SELECT data, cotacao FROM Oraculo WHERE data = ?"));
+        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("SELECT Data, Cotacao FROM ORACULO WHERE Data = ?"));
 
         pstmt->setString(1, data);
 
@@ -31,8 +31,8 @@ Oraculo* OraculoDAO_DB::recuperar(const std::string& data) {
 
         if (res->next()) {
             return new Oraculo(
-                res->getString("data"),
-                res->getDouble("cotacao")
+                (std::string)res->getString("Data"),
+                res->getDouble("Cotacao")
             );
         }
     } catch (sql::SQLException &e) {
@@ -41,17 +41,17 @@ Oraculo* OraculoDAO_DB::recuperar(const std::string& data) {
     return nullptr;
 }
 
-std::vector<Oraculo> OraculoDAO_DB::listar() {
+std::vector<Oraculo> OraculoDAO_DB::listar() const {
     std::vector<Oraculo> oraculos;
     try {
         sql::Connection* conn = dbConnection->getConnection();
         std::unique_ptr<sql::Statement> stmt(conn->createStatement());
-        std::unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT data, cotacao FROM Oraculo ORDER BY data"));
+        std::unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT Data, Cotacao FROM ORACULO ORDER BY Data"));
 
         while (res->next()) {
             oraculos.push_back(Oraculo(
-                res->getString("data"),
-                res->getDouble("cotacao")
+                (std::string)res->getString("Data"),
+                res->getDouble("Cotacao")
             ));
         }
     } catch (sql::SQLException &e) {

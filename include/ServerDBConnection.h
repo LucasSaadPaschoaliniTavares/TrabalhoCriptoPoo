@@ -6,10 +6,10 @@
 
 class ServerDBConnection final {
 private:
-    std::string serverIP       = "endereco_do_servidor";
-    std::string serverDatabase = "seu_nome_de_banco";
-    std::string serverUser     = "seu_usuario";
-    std::string serverPassword = "sua_senha";
+    std::string serverIP       = "143.106.243.64";
+    std::string serverDatabase = "PooI_25_B12";
+    std::string serverUser     = "PooI_25_B12";
+    std::string serverPassword = "kDtAZStbJh";
     std::string serverPort     = "3306";
 
     sql::Driver* driver;

@@ -1,6 +1,8 @@
 #include <iostream>
 #include "Utils.h"
 #include "SysInfo.h"
+#include <cstdlib>
+#include <limits>
 
 void Utils::printMessage(string text)
 {
@@ -24,4 +26,17 @@ string Utils::replicate(string text, int times)
         buffer += text;
     }
     return (buffer);
+}
+
+void Utils::limparTela() {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}
+
+void Utils::pausar() {
+    std::cout << "\nPressione Enter para continuar...";
+    std::cin.get();
 }

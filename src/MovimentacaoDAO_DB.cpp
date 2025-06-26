@@ -8,7 +8,7 @@ MovimentacaoDAO_DB::~MovimentacaoDAO_DB() {}
 void MovimentacaoDAO_DB::incluir(const Movimentacao& mov) {
     try {
         sql::Connection* conn = dbConnection->getConnection();
-        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("INSERT INTO Movimentacoes(carteira_id, tipo, quantidade, data) VALUES (?, ?, ?, ?)"));
+        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("INSERT INTO MOVIMENTACAO(IdCarteira, TipoOperacao, Quantidade, Data) VALUES (?, ?, ?, ?)"));
 
         pstmt->setInt(1, mov.getCarteiraId());
 
@@ -29,22 +29,22 @@ std::vector<Movimentacao> MovimentacaoDAO_DB::listarPorCarteira(int carteiraId) 
     std::vector<Movimentacao> movimentacoes;
     try {
         sql::Connection* conn = dbConnection->getConnection();
-        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("SELECT id, carteira_id, tipo, quantidade, data FROM Movimentacoes WHERE carteira_id = ? ORDER BY data"));
+        std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement("SELECT IdMovimento, IdCarteira, TipoOperacao, Quantidade, Data FROM MOVIMENTACAO WHERE IdCarteira = ? ORDER BY Data"));
 
         pstmt->setInt(1, carteiraId);
 
         std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
 
         while (res->next()) {
-            std::string tipoStr = res->getString("tipo");
+            std::string tipoStr = (std::string)res->getString("tipo");
             Movimentacao::Tipo tipo = (tipoStr == "C") ? Movimentacao::COMPRA : Movimentacao::VENDA;
 
             movimentacoes.push_back(Movimentacao(
-                res->getInt("id"),
-                res->getInt("carteira_id"),
+                res->getInt("IdMovimento"),
+                res->getInt("IdCarteira"),
                 tipo,
-                res->getDouble("quantidade"),
-                res->getString("data")
+                res->getDouble("Quantidade"),
+                (std::string)res->getString("Data")
             ));
         }
     } catch (sql::SQLException &e) {
