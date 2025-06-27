@@ -150,9 +150,15 @@ void Controller::_processarMenuAjuda() {
 void Controller::_incluirCarteira() {
     cout << "=== Incluir Nova Carteira ===\n";
     cout << "Nome do titular: ";
-    string nome;
-    getline(cin, nome);
-    carteiraDao->incluir(Carteira(0, nome, "Default Broker"));
+    string nomeTitular;
+    getline(cin, nomeTitular);
+
+    cout << "Corretora: ";
+    string corretora;
+    getline(cin, corretora);
+
+
+    carteiraDao->incluir(Carteira(0, nomeTitular, corretora));
     cout << "Carteira incluída com sucesso!\n";
     Utils::pausar();
 }
@@ -164,7 +170,9 @@ void Controller::_listarCarteiras() {
         cout << "Nenhuma carteira cadastrada.\n";
     } else {
         for (const auto& c : lista) {
-            cout << "ID: " << c.getId() << " | Titular: " << c.getNomeTitular() << '\n';
+            cout << "ID: " << c.getId()
+                 << " | Titular: " << c.getNomeTitular()
+                 << " | Corretora: " << c.getCorretora() << '\n';
         }
     }
     Utils::pausar();
@@ -176,17 +184,34 @@ void Controller::_editarCarteira() {
     int id;
     cin >> id;
     cin.ignore();
+
     Carteira* c = carteiraDao->recuperar(id);
+
     if (c == nullptr) {
         cout << "Carteira não encontrada.\n";
     } else {
         cout << "Nome atual: " << c->getNomeTitular() << "\n";
-        cout << "Novo nome: ";
+        cout << "Novo nome (deixe em branco para manter o atual): ";
         string novoNome;
         getline(cin, novoNome);
-        c->setNomeTitular(novoNome);
-        carteiraDao->editar(*c);
-        cout << "Carteira editada com sucesso!\n";
+        if (!novoNome.empty()) {
+            c->setNomeTitular(novoNome);
+        }
+
+        cout << "Corretora atual: " << c->getCorretora() << "\n";
+        cout << "Nova corretora (deixe em branco para manter a atual): ";
+        string novaCorretora;
+        getline(cin, novaCorretora);
+        if (!novaCorretora.empty()) {
+            c->setCorretora(novaCorretora);
+        }
+
+
+        if (carteiraDao->editar(*c)) {
+            cout << "Carteira editada com sucesso!\n";
+        } else {
+            cout << "Erro ao salvar as alterações da carteira.\n";
+        }
     }
     Utils::pausar();
 }

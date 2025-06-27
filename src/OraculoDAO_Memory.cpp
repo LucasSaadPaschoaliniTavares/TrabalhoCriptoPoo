@@ -10,8 +10,8 @@ void OraculoDAO_Memory::incluir(const Oraculo& oraculo) {
 }
 
 Oraculo* OraculoDAO_Memory::recuperar(const std::string& data) {
-    static const double PRECO_BASE = 60000.0;
-    static const double FATOR_CRESCIMENTO_DIARIO = 100.0;
+    static const double PRECO_BASE = 1000.0;
+    static const double FATOR_CRESCIMENTO_DIARIO = 400.0;
     static const long DATA_BASE = 20250101;
 
     std::string dataNumericaStr = data;

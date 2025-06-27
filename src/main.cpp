@@ -25,8 +25,8 @@ DataBaseSelector escolherModoDePersistencia() {
     while (true) {
         std::cout << "--- Configuração de Persistência ---\n";
         std::cout << "Escolha o modo de armazenamento de dados:\n";
-        std::cout << "1 - Em Memória (rápido, os dados são perdidos ao fechar)\n";
-        std::cout << "2 - Banco de Dados MariaDB (persistente, requer conexão)\n";
+        std::cout << "1 - Em Memória (Os dados são perdidos ao fechar)\n";
+        std::cout << "2 - Banco de Dados MariaDB (Persistente, requer conexão)\n";
         std::cout << "Sua opção: ";
 
         std::cin >> escolha;
