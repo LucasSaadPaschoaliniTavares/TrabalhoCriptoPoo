@@ -238,19 +238,38 @@ void Controller::_registrarCompra() {
     int carteiraId;
     cin >> carteiraId;
     cin.ignore();
-    if (carteiraDao->recuperar(carteiraId) == nullptr) {
+
+    Carteira* c = carteiraDao->recuperar(carteiraId);
+    if (c == nullptr) {
         cout << "Carteira não encontrada!\n";
-    } else {
-        cout << "Quantidade: ";
-        double qtd;
-        cin >> qtd;
-        cin.ignore();
-        string data;
-        cout << "Data (AAAA-MM-DD): ";
-        getline(cin, data);
-        movDao->incluir(Movimentacao(0, carteiraId, Movimentacao::COMPRA, qtd, data));
-        cout << "Compra registrada com sucesso!\n";
+        Utils::pausar();
+        return;
     }
+
+    string data;
+    cout << "Data da compra (AAAA-MM-DD): ";
+    getline(cin, data);
+
+    Oraculo* oraculoDoDia = oraculoDao->recuperar(data);
+    if (!oraculoDoDia) {
+        cout << "Não foi possível obter a cotação para a data " << data << ".\n";
+        Utils::pausar();
+        return;
+    }
+
+    cout << fixed << setprecision(2);
+    cout << "Cotação para " << data << ": R$ " << oraculoDoDia->getCotacao() << "\n";
+
+    cout << "Quantidade de moeda comprada: ";
+    double qtd;
+    cin >> qtd;
+    cin.ignore();
+
+    movDao->incluir(Movimentacao(0, carteiraId, Movimentacao::COMPRA, qtd, data));
+    cout << "Compra registrada com sucesso!\n";
+
+    delete oraculoDoDia;
+
     Utils::pausar();
 }
 
@@ -260,19 +279,39 @@ void Controller::_registrarVenda() {
     int carteiraId;
     cin >> carteiraId;
     cin.ignore();
-    if (carteiraDao->recuperar(carteiraId) == nullptr) {
+
+
+    Carteira* c = carteiraDao->recuperar(carteiraId);
+    if (c == nullptr) {
         cout << "Carteira não encontrada!\n";
-    } else {
-        cout << "Quantidade: ";
-        double qtd;
-        cin >> qtd;
-        cin.ignore();
-        string data;
-        cout << "Data (AAAA-MM-DD): ";
-        getline(cin, data);
-        movDao->incluir(Movimentacao(0, carteiraId, Movimentacao::VENDA, qtd, data));
-        cout << "Venda registrada com sucesso!\n";
+        Utils::pausar();
+        return;
     }
+
+    string data;
+    cout << "Data da venda (AAAA-MM-DD): ";
+    getline(cin, data);
+
+    Oraculo* oraculoDoDia = oraculoDao->recuperar(data);
+    if (!oraculoDoDia) {
+        cout << "Não foi possível obter a cotação para a data " << data << ".\n";
+        Utils::pausar();
+        return;
+    }
+
+    cout << fixed << setprecision(2);
+    cout << "Cotação para " << data << ": R$ " << oraculoDoDia->getCotacao() << "\n";
+
+    cout << "Quantidade de moeda vendida: ";
+    double qtd;
+    cin >> qtd;
+    cin.ignore();
+
+    movDao->incluir(Movimentacao(0, carteiraId, Movimentacao::VENDA, qtd, data));
+    cout << "Venda registrada com sucesso!\n";
+
+    delete oraculoDoDia;
+
     Utils::pausar();
 }
 
