@@ -1,6 +1,6 @@
 #include "SysInfo.h"
 
-const string SysInfo::author = "Lucas Gabriel, Lucas SaaD, Gabriel Gaudio, Peixonauta";
+const string SysInfo::author = "Lucas Gabriel, Lucas SaaD, Gabriel Gaudio, João Yokoyama";
 const string SysInfo::date = "2025, June";
 const string SysInfo::institution = "Universidade Estadual de Campinas (Unicamp)";
 const string SysInfo::systemName = "FT_coin C++";
