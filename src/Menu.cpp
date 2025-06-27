@@ -17,7 +17,7 @@ void Menu::setDecorator(const string &symbol, int width)
 	this->width = width;
 	}
 
-const int Menu::getChoice()
+int Menu::getChoice()
 	{
 	unsigned long choice;
 	bool firstTime = true;
@@ -71,9 +71,9 @@ const string Menu::makeDecorator()
 	return (replicate(symbol, width));
 	}
 
-const bool Menu::isNotAValidChoice(unsigned long choice) const
+bool Menu::isNotAValidChoice(unsigned long choice) const
 	{
-	return ((choice < 0) || (choice > (itens.size() - 1)));
+	return (choice > (itens.size() - 1));
 	}
 
 const string Menu::replicate(string text, int times) const
@@ -86,7 +86,7 @@ const string Menu::replicate(string text, int times) const
 	return (buffer);
 	}
 
-const int Menu::getLength() const
+int Menu::getLength() const
 	{
 	return (itens.size());
 	}

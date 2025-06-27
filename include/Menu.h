@@ -19,7 +19,7 @@ class Menu final
 		bool repeatList;
 		bool zeroForLastOpt;
 
-		const bool isNotAValidChoice(unsigned long choice) const;
+		bool isNotAValidChoice(unsigned long choice) const;
 		const string replicate(string text, int times) const;
 		const string makeDecorator();
 
@@ -27,12 +27,12 @@ class Menu final
 		Menu(vector<string> &itens, string title = "Menu", string message = "Option: ");
 		virtual ~Menu();
 
-		const int getChoice();
+		int getChoice();
 		void setDecorator(const string &decorator, int width);
 
 		const string& getDecorator() const;
 		const string& getMessage() const;
-		const int getLength() const;
+		int getLength() const;
 		void setMessage(const string &message);
 		bool isRepeatList() const;
 		void setRepeatList(bool repeatList = false);
